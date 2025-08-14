@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新月岛史官</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 1600px;
+            width: 100%;
+        }
+        
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 16px;
+            font-size: 2em;
+        }
+        
+        .content {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .workspace {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .workspace .data-list {
+            border-left: 1px solid #e1e5e9;
+            margin-left: 16px;
+            padding-left: 16px;
+            align-self: stretch;
+            width: 300px;
+        }
+
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .card {
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 16px;
+            background: #fff;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .card-trigger {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .icon-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        .icon-btn:hover {
+            background: #f0f2f5;
+        }
+
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #667eea;
+        }
+
+        .card-time {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .card-time-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: #fff;
+            width: 360px;
+            max-width: calc(100vw - 40px);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+        }
+
+        .modal-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .modal-input {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        .modal-input:focus {
+            border-color: #667eea;
+        }
+        
+        .modal-actions {
+            margin-top: 14px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #f0f2f5;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .modal-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .data-output {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            min-height: 120px;
+            resize: vertical;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <h2>{{ title }}</h2>
+            <div class="content">
+                <p>By： Kiryca@海猫茶屋</p>
+            </div>
+            
+            <div class="workspace">
+                <div class="card-list">
+                    <div class="card" v-for="ce in ceList" :key="ce.id">
+                        <div class="card-title">{{ ce.name }}</div>
+                        <!-- <div class="card-desc">{{ ce.description }}</div> -->
+                        <div class="card-trigger">触发条件：{{ ce.trigger }}</div>
+                        <div class="card-footer">
+                            <span class="card-time-group">
+                                <button class="icon-btn" @click="editTime(ce)" title="修改记录时间">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path
+                                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.83H5v-.92l9.06-9.06.92.92L5.92 20.08zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" />
+                                    </svg>
+                                </button>
+                                <span class="card-time">{{ ce.recordedAt || '未记录' }}</span>
+                            </span>
+                            <button class="icon-btn" @click="recordTime(ce)" title="记录当前时间">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path
+                                        d="M12 1.75a10.25 10.25 0 1 0 0 20.5 10.25 10.25 0 0 0 0-20.5zm0 18.5a8.25 8.25 0 1 1 0-16.5 8.25 8.25 0 0 1 0 16.5zM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V6z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+            </div>
+            
+                <div class="data-list">
+                    <div style="margin-bottom: 8px; font-weight: 600; color: #333;">设置时间</div>
+                    <textarea class="data-output" v-model="batchSet.text" placeholder="将喊话文字的字符串粘贴到此处以快速设置(不需要加/sh )，例如：鲨鱼 [08:00] 罐子 [09:15] ..."></textarea>
+                    <div style="margin-top: 8px; display: flex; gap: 8px;">
+                        <button class="btn" @click="applyBatchSet">应用设置时间</button>
+                        <button class="btn-secondary" @click="clearBatchSet">清空输入框</button>
+                    </div>
+                    <hr style="border:none;border-top:1px solid #e1e5e9;margin:12px 0;" />
+                    <div style="margin-bottom: 8px; font-weight: 600; color: #333;">生成喊话文字</div>
+                    <textarea class="data-output" v-model="batch.text" placeholder="生成内容会出现在这里..."></textarea>
+                    <div style="margin-top: 8px; display: flex; gap: 8px;">
+                        <button class="btn" @click="generateBatch">生成喊话</button>
+                        <button class="btn-secondary" @click="copyBatch">复制喊话</button>
+            </div>
+                </div>
+            </div>
+            
+            <div v-if="editing.visible" class="modal-overlay" @click.self="closeModal">
+                <div class="modal">
+                    <div class="modal-header">修改记录时间</div>
+                    <input class="modal-input" type="text" v-model="editing.value" placeholder="例如：09:30"
+                        @keyup.enter="confirmEdit" />
+                    <div v-if="editing.error" class="modal-error">{{ editing.error }}</div>
+                    <div class="modal-actions">
+                        <button class="btn-secondary" @click="closeModal">取消</button>
+                        <button class="btn" @click="confirmEdit">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script>
+        const { createApp, ref } = Vue;
+        
+        createApp({
+            setup() {
+                // 响应式数据
+                const title = ref('新月岛史官 Ver1.0.0');
+
+                const ceList = ref([
+                    {
+                        id: 1,
+                        name: '传说中的鲨鱼——尼姆瓣齿鲨',
+                        description: '橙色半魂晶 / 探查记录：尼姆瓣齿鲨',
+                        trigger: 'Lv.7 新月小瓣齿鲨 x:17 y:19',
+                        abbreviation: '鲨鱼',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 2,
+                        name: '防卫指令——指令罐',
+                        description: '橙色半魂晶',
+                        trigger: 'Lv.7 新月巨像 x:10 y:8',
+                        abbreviation: '罐子',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 3,
+                        name: '贩卖诅咒的商贩——金钱龟',
+                        description: '橙色半魂晶 / 探查记录：金钱龟',
+                        trigger: 'Lv.7 新月刻托斯 x:23 y:6',
+                        abbreviation: '金钱龟',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 4,
+                        name: '厌鸟巨兽——进化加鲁拉',
+                        description: '黄色半魂晶',
+                        trigger: 'Lv.1 新月加鲁拉 x:30 y:8',
+                        abbreviation: '加鲁拉',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 5,
+                        name: '黑色连队——黑陆行鸟&黑色彗星',
+                        description: '黄色半魂晶 / 探查记录：黑陆行鸟 / 猎人灵魂水晶',
+                        trigger: 'Lv.14 新月黑豹 x:30 y:28',
+                        abbreviation: '黑陆行鸟',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 6,
+                        name: '石质骑士团——新月骑士群',
+                        description: '紫色半魂晶',
+                        trigger: 'Lv.4 新月马洛里石 x:32 y:18',
+                        abbreviation: '新月骑士',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 7,
+                        name: '双足狮人——跃立狮',
+                        description: '紫色半魂晶 / 预言家灵魂水晶',
+                        trigger: 'Lv.5 新月风扇 x:32 y:24',
+                        abbreviation: '双足狮人',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 8,
+                        name: '城塞守卫——复原狮像',
+                        description: '紫色半魂晶',
+                        trigger: 'Lv.20 新月狮子 x:36 y:22',
+                        abbreviation: '复原狮像',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 9,
+                        name: '拟造使魔——水晶龙',
+                        description: '绿色半魂晶',
+                        trigger: 'Lv.19 新月巨钳虾 x:12 y:30',
+                        abbreviation: '水晶龙',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 10,
+                        name: '双极的造物——神秘土偶',
+                        description: '绿色半魂晶 / 探查记录：神秘土偶',
+                        trigger: 'Lv.13 新月比布鲁斯 x:4 y:24',
+                        abbreviation: '土偶',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 11,
+                        name: '昏暗妖魂——鬼火苗',
+                        description: '绿色半魂晶',
+                        trigger: 'Lv.19 新月哈耳庇厄鸟妖 x:12 y:15',
+                        abbreviation: '拟鸟枝',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 12,
+                        name: '潜影撕裂者——死亡爪',
+                        description: '青色半魂晶',
+                        trigger: 'Lv.16 新月黑卫 x:33 y:31',
+                        abbreviation: '死亡爪',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 13,
+                        name: '愤怒的人造人——新月狂战士',
+                        description: '青色半魂晶 / 探查记录：新月狂战士 / 狂战士灵魂水晶',
+                        trigger: 'Lv.17 新月恶魔兵卒 x:32 y:33',
+                        abbreviation: '狂战士',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 14,
+                        name: '脑髓爱好者——夺心魔',
+                        description: '青色半魂晶',
+                        trigger: 'Lv.15 新月鬼鱼 x:26 y:34',
+                        abbreviation: '夺心魔',
+                        recordedAt: ''
+                    },
+                    {
+                        id: 15,
+                        name: '挣脱封印的大妖异——回廊恶魔',
+                        description: '碧色半魂晶 / 探查记录：回廊恶魔',
+                        trigger: 'Lv.20 新月墨渍 x:12 y:33',
+                        abbreviation: '岛主',
+                        recordedAt: ''
+                    }
+                ]);
+
+                const editing = ref({ visible: false, ce: null, value: '', error: '' });
+
+                const recordTime = (ce) => {
+                    const now = new Date();
+                    ce.recordedAt = now.toLocaleTimeString('zh-CN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                };
+
+                const editTime = (ce) => {
+                    editing.value = { visible: true, ce, value: ce.recordedAt || '', error: '' };
+                };
+
+                const closeModal = () => {
+                    editing.value = { visible: false, ce: null, value: '', error: '' };
+                };
+
+                const confirmEdit = () => {
+                    const input = (editing.value.value || '').trim();
+                    if (input === '') {
+                        if (editing.value.ce) {
+                            editing.value.ce.recordedAt = '';
+                        }
+                        closeModal();
+                        return;
+                    }
+                    const isValid = /^([01]\d|2[0-3]):([0-5]\d)$/.test(input);
+                    if (!isValid) {
+                        editing.value.error = '时间格式不正确，请使用 00-23 小时与 00-59 分钟，例如 09:30';
+                        return;
+                    }
+                    if (editing.value.ce) {
+                        editing.value.ce.recordedAt = input;
+                    }
+                    closeModal();
+                };
+                
+                const batch = ref({ text: '' });
+                const batchSet = ref({ text: '' });
+
+                const generateBatch = () => {
+                    const parts = ceList.value.map(ce => `${ce.abbreviation || ''} [${ce.recordedAt || '--:--'}]`.trim());
+                    batch.value.text = `/sh ${parts.join(' ')}`.trim();
+                };
+
+                const copyBatch = async () => {
+                    try {
+                        await navigator.clipboard.writeText(batch.value.text || '');
+                    } catch (e) {
+                        const ta = document.createElement('textarea');
+                        ta.value = batch.value.text || '';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                };
+                
+                const applyBatchSet = () => {
+                    const raw = (batchSet.value.text || '').trim();
+                    if (!raw) {
+                        return;
+                    }
+                    const text = raw.replace(/^\/\w+\s+/, '');
+                    const abbreviationToCe = new Map(ceList.value.map(ce => [ce.abbreviation, ce]));
+                    const pattern = /([^\s]+)\s*\[((?:[01]\d|2[0-3]):[0-5]\d|--:--)\]/g;
+                    let match;
+                    while ((match = pattern.exec(text)) !== null) {
+                        const abbr = match[1];
+                        const time = match[2];
+                        const ce = abbreviationToCe.get(abbr);
+                        if (ce) {
+                            ce.recordedAt = time === '--:--' ? '' : time;
+                        }
+                    }
+                };
+
+                const clearBatchSet = () => {
+                    batchSet.value.text = '';
+                };
+                
+                return {
+                    title,
+                    ceList,
+                    recordTime,
+                    editTime,
+                    editing,
+                    closeModal,
+                    confirmEdit,
+                    // batch tools
+                    batch,
+                    batchSet,
+                    generateBatch,
+                    copyBatch,
+                    applyBatchSet,
+                    clearBatchSet
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>
