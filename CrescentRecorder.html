@@ -102,7 +102,7 @@
             cursor: pointer;
             padding: 6px;
             border-radius: 50%;
-            transition: background-color 0.15s ease-in-out;
+            transition: background-color 0.15 ease-in-out;
         }
 
         .icon-btn:hover {
@@ -161,7 +161,7 @@
             padding: 10px 12px;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.15s ease-in-out;
+            transition: border-color 0.15 ease-in-out;
         }
         
         .modal-input:focus {
@@ -289,8 +289,7 @@
         
         createApp({
             setup() {
-                // 响应式数据
-                const title = ref('新月岛史官 Ver1.0.0');
+                const title = ref('新月岛史官 Ver1.0.1');
 
                 const ceList = ref([
                     {
@@ -329,7 +328,7 @@
                         id: 5,
                         name: '黑色连队——黑陆行鸟&黑色彗星',
                         description: '黄色半魂晶 / 探查记录：黑陆行鸟 / 猎人灵魂水晶',
-                        trigger: 'Lv.14 新月黑豹 x:30 y:28',
+                        trigger: 'Lv.14 新月猎豹 x:30 y:28',
                         abbreviation: '黑陆行鸟',
                         recordedAt: ''
                     },
@@ -353,7 +352,7 @@
                         id: 8,
                         name: '城塞守卫——复原狮像',
                         description: '紫色半魂晶',
-                        trigger: 'Lv.20 新月狮子 x:36 y:22',
+                        trigger: 'Lv.20 新月立狮 x:36 y:22',
                         abbreviation: '复原狮像',
                         recordedAt: ''
                     },
@@ -518,5 +517,6 @@
         }).mount('#app');
     </script>
 </body>
+
 
 </html>
